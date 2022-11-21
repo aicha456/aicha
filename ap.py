@@ -24,7 +24,7 @@ st.set_page_config(
     
 )
 def chart (level):
-    plot_bgcolor = "White"
+    plot_bgcolor = "rgb(0,0,0)"
     quadrant_colors = [plot_bgcolor, "#f25829", "#f2a529", "#eff229", "#85e043"] 
     quadrant_text = ["", "<b>level three</b>", "<b>level two </b>", "<b>level one </b>", "<b>Very low</b>"]
     n_quadrants = len(quadrant_colors) - 1

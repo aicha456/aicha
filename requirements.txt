@@ -126,7 +126,7 @@ widgetsnbextension==3.5.2
 zipp==3.10.0
 arabic_reshaper==2.1.4
 python-bidi==0.4.2
-
+streamlit-folium ==0.7.0
 
 folium==0.12.1
 

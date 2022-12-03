@@ -205,8 +205,8 @@ elif 100< b <400:
       lottie_he = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_bveyhj83.json")
       st_lottie(
             lottie_he,
-            width=20,
-            height=20
+            width=200,
+            height=200
         )
 
 

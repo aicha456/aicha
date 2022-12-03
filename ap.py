@@ -2,10 +2,11 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import os
-
+from streamlit_lottie import st_lottie
 import plotly.express as px
 import plotly.graph_objects as go
-
+from collections import Counter
+import arabic_reshaper
 import matplotlib.pyplot as plt
 import seaborn as sns
 import tweepy
@@ -15,16 +16,29 @@ import matplotlib.pyplot as plt
 import os
 import plotly.graph_objects as go
 import numpy as np
+from arabic_reshaper import ArabicReshaper
+from bidi.algorithm import get_display
+import nuitka
+import requests
 
 
 
 st.set_page_config(
     page_title=" Dashboard",
     page_icon="📈",
-    
+
 )
+
+
+
+
+def load_lottieurl(url: str):
+            r = requests.get(url)
+            if r.status_code != 200:
+                return None
+            return r.json()
 def chart (level):
-    plot_bgcolor = "rgb(0,0,0)"
+    plot_bgcolor = "rgb(14,17,23)"
     quadrant_colors = [plot_bgcolor, "#f25829", "#f2a529", "#eff229", "#85e043"] 
     quadrant_text = ["", "<b>level three</b>", "<b>level two </b>", "<b>level one </b>", "<b>Very low</b>"]
     n_quadrants = len(quadrant_colors) - 1
@@ -84,6 +98,11 @@ consumer_key = '78F6GWmlPoJX4CtW8E5A4dQYf'
 consumer_secret = 'Uj3ZCkYe47HOLG0OOyXUly3wyvwhFAG8GLuQqZHVqse6VipfwJ'
 access_token = '1310463220281495552-D8AOegt4AcMXgiC738DgD6STjQbaVi'
 access_token_secret = 'PrcCzW7N4LmEcLIKnxv7VcX8ytwwCsAIdal2EWXROhKAh'
+
+#consumer_key = 'MlYcPT94qliDArDpwD7uy4jwt'
+#consumer_secret = 'Im8r1N3bPi4k1K0MIGE2KB1NUo5KL6qMY2n5fiV32Zprx3N69s'
+#access_token = '756327168-ZVzm0SKuoeEyxeYz4LJkG4IQZqEja4dHG0QJwHgu'
+#access_token_secret = 'Uii0oZfdKru8PP3iT5uUdsznjOLU2A58acptCJZxDaqup'
 #Authenticate with credentials
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
@@ -172,9 +191,24 @@ elif 10 < b <20 :
 elif 20 < b < 100:
   print('level three')
   st.success('level  three', icon="✅")
-  chart(50)
+  lottie_he = load_lottieurl("https://assets3.lottiefiles.com/private_files/lf30_up3nxxtl.json")
+  st_lottie(
+            lottie_he,
+            width=200,
+            height=200
+        )
+
+  chart(45)
   #st.title('level three')
   st.success('level  three', icon="✅")
+elif 100< b <400:
+      lottie_he = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_bveyhj83.json")
+      st_lottie(
+            lottie_he,
+            width=20,
+            height=20
+        )
+
 
 else :
   print("no level ")
@@ -184,6 +218,29 @@ else :
 #fig, ax = plt.subplots()
 #ax.plot(tweet_df_5min )
 #st.line_chart(tweet_df_5min)
+
+
+c=[]
+for i in tweets_df['Followers']:
+  if 0 <i <100 :
+    i=100
+    c.append(i)
+  elif   100<i <500 :
+    i=50
+    c.append(i)
+  elif 500<i <1000 :
+   i=1000
+   c.append(i)
+  elif 1000<i <10000 :
+   i=10000
+   c.append(i)
+  elif 10000<i <100000 :
+   i=100000
+   c.append(i)
+  else :
+    i=1000000
+    c.append(i)
+tweets_df['folo'] = np.array(c)
 
 st.markdown("<h1 style='text-align: center; color: deepskyblue;'>Tweet per minutes  </h1>", unsafe_allow_html=True)
 tab1, tab2 = st.tabs(["min", "S"])
@@ -223,12 +280,11 @@ with col2:
    st.metric(label="Followers av", value=tweets_df['Followers'].mean(), delta="tweet in 1Min")
 
 
-tab1, tab2 = st.tabs(["Followers", "source"])
+tab1, tab2 ,tab3= st.tabs(["Followers", "source",'folo'])
 
 with tab1:
    st.header("the Followers")
-   f=tweets_df["Followers"].value_counts().head()
-   fig3 = px.pie(f, values=f.values, names=f.index, title='Followers')
+   fig3 = px.pie(tweets_df["Followers"].value_counts().head(), values=tweets_df["Followers"].value_counts().head().values, names=tweets_df["Followers"].value_counts().head().index, title='Followers')
    st.plotly_chart(fig3)
 
 with tab2:
@@ -237,5 +293,154 @@ with tab2:
     #st.pyplot(fig)
     st.plotly_chart(fig2)
 
+with tab3:
 
 
+   fig4 = px.pie(tweets_df["folo"].value_counts().values, values=tweets_df["folo"].value_counts().values, names=['[0<Followers<100]','[100<Followers<500]','[500<Followers<1K]','[1K<Followers<10K]','[10K<Followers<100K]','[more then 100K]'], title='Followers')
+   
+   st.plotly_chart(fig4)
+
+#Api = tweepy.API(auth)
+
+
+
+import folium
+import  geopy
+from geopy.exc import GeocoderTimedOut
+from geopy.geocoders import Nominatim
+
+
+#geo_locator = Nominatim(user_agent="LearnPython")
+#m = folium.Map(location=[0, 0], zoom_start=2)
+#f#or (name, location) in location_data:
+        #if location:
+            #try:
+                ##location = geo_locator.geocode(location)
+            #except GeocoderTimedOut:
+                #continue
+            #if location:
+                #folium.Marker([location.latitude, location.longitude], popup=name).add_to(m)
+
+#m = folium.Map(location=[0, 0], zoom_start=2)
+
+    #st.map(map.save("index.html"))
+consumer_key1 = 'MlYcPT94qliDArDpwD7uy4jwt'
+consumer_secret1 = 'Im8r1N3bPi4k1K0MIGE2KB1NUo5KL6qMY2n5fiV32Zprx3N69s'
+access_token1 = '756327168-ZVzm0SKuoeEyxeYz4LJkG4IQZqEja4dHG0QJwHgu'
+access_token_secret1 = 'Uii0oZfdKru8PP3iT5uUdsznjOLU2A58acptCJZxDaqup'
+#Authenticate with credentials
+auth = tweepy.OAuthHandler(consumer_key1, consumer_secret1)
+auth.set_access_token(access_token1, access_token_secret1)
+apii = tweepy.API(auth)
+def get_tweets(key_word):
+    #Api = tweepy.API(auth)
+    location_data = []
+    for tweet in tweepy.Cursor(apii.search_tweets, q=key_word,lang = 'ar').items(100):
+        if hasattr(tweet, 'user') and hasattr(tweet.user, 'screen_name') and hasattr(tweet.user, 'location'):
+            if tweet.user.location:
+                location_data.append((tweet.user.screen_name, tweet.user.location))
+    return location_data
+
+
+def removeWeirdChars(text):
+    weirdPatterns = re.compile("["
+                               u"\U0001F600-\U0001F64F"  # emoticons
+                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
+                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
+                               u"\U0001F1E0-\U0001F1FF"  # flags (iOS)
+                               u"\U00002702-\U000027B0"
+                               u"\U000024C2-\U0001F251"
+                               u"\U0001f926-\U0001f937"
+                               u'\U00010000-\U0010ffff'
+                               u"\u200d"
+                               u"\u2640-\u2642"
+                               u"\u2600-\u2B55"
+                               u"\u23cf"
+                               u"\u23e9"
+                               u"\u231a"
+                               u"\u3030"
+                               u"\ufe0f"
+                               u"\u2069"
+                               u"\u2066"
+                               u"\u200c"
+                               u"\u2068"
+                               u"\u2067"
+                               "]+", flags=re.UNICODE)
+    return weirdPatterns.sub(r'', text)
+tweets_loc = get_tweets(key_word)
+
+plt.style.use('ggplot')
+c='السعودية'
+m='المملكة'
+s='Saudi'
+#a=tweets_df[0]
+#if c in a[1]:
+   #print('yes')
+a=[]
+d=[]
+x=[]
+
+for i in tweets_loc:
+  b=i[1]
+  if c in i[1]:
+    a.append('السعودية')
+  elif m  in i[1]:
+    a.append('السعودية')
+  elif s in  i[1]:
+    a.append('السعودية')
+  else:
+   a.append(b)
+
+D=Counter(a)
+df =pd.DataFrame.from_dict(D, orient='index').reset_index()
+
+common_element = D.most_common(10)
+
+
+
+for i in df['index']:
+  
+  #o=get_display(arabic_reshaper.reshape(i))
+  o=removeWeirdChars(i)
+  x.append(o)
+
+import plotly.figure_factory as ff
+
+df['index'] = x
+print(df['index'])
+plt.figure(figsize = (20, 10))
+df=df.sort_values(by=0,ascending=False)
+
+df=df.head(30)
+fig5 = px.bar(
+      x= df['index'] , y=df[0])
+#fig5=plt.bar(df['index'],df[0])
+
+st.plotly_chart(fig5)
+
+
+
+
+from streamlit_folium import folium_static
+#m = folium.Map(location=[45.5236, -122.6750])
+#folium_static(m)
+if st.button('show me the map'):  
+  
+
+  data=get_tweets(key_word)
+  m= folium.Map(location=[0, 0], zoom_start=2)
+  #st.map(data)
+  geo_locator = Nominatim(user_agent="LearnPython")
+  for (name, location) in data:
+        if location:
+            try:
+                location = geo_locator.geocode(location)
+            except GeocoderTimedOut:
+                continue
+            if location:
+                folium.Marker([location.latitude, location.longitude], popup=name).add_to(m)
+
+
+  location_data = get_tweets(key_word)
+  folium_static(m)    
+  

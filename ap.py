@@ -18,7 +18,7 @@ import plotly.graph_objects as go
 import numpy as np
 from arabic_reshaper import ArabicReshaper
 from bidi.algorithm import get_display
-import nuitka
+
 import requests
 
 

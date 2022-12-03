@@ -126,4 +126,4 @@ widgetsnbextension==3.5.2
 zipp==3.10.0
 arabic_reshaper==2.1.4
 bidi==0.4.2
-nuitka==0.4.1
+

@@ -128,3 +128,7 @@ arabic_reshaper==2.1.4
 python-bidi==0.4.2
 
 
+folium==0.12.1
+
+geopy==2.3.0
+

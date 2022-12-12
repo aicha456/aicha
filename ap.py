@@ -18,8 +18,12 @@ import plotly.graph_objects as go
 import numpy as np
 from arabic_reshaper import ArabicReshaper
 from bidi.algorithm import get_display
+import ibm_watson
+# Import Watson
 
 import requests
+# Import authenticator
+
 
 
 
@@ -30,21 +34,7 @@ st.set_page_config(
 )
 
 
-hide_streamlit_style = """
-            <style>
-            #MainMenu {visibility: hidden;}
-            footer {visibility: hidden;}
-            </style>
-            """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
-hide_streamlit_style = """
-<style>
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-</style>
-"""
-st. markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 def load_lottieurl(url: str):
             r = requests.get(url)
@@ -121,40 +111,29 @@ access_token_secret = 'PrcCzW7N4LmEcLIKnxv7VcX8ytwwCsAIdal2EWXROhKAh'
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
 auth.set_access_token(access_token, access_token_secret)
 api = tweepy.API(auth)
-menu=['home','about']
+menu=['serch by key_word','serch by username']
 choice = st.sidebar.selectbox("Menu",menu)
-st.markdown("<h1 style='text-align: center; color: deepskyblue	;'>📉 key word anlaysis </h1>", unsafe_allow_html=True)
+if choice == "serch by key_word":
+ st.markdown("<h1 style='text-align: center; color: deepskyblue	;'>📉 key word anlaysis </h1>", unsafe_allow_html=True)
 
-key_word = st.text_input('enter key word ', ' #')
-st.write('The current keyword   is', key_word)
-col1, col2 = st.columns([3, 3])
+ key_word = st.text_input('enter key word ', ' #')
+ st.write('The current keyword   is', key_word)
+ col1, col2 = st.columns([3, 3])
 
-with col1:
+ with col1:
     limit = st.slider(
         'Select a limit of tweets ',
         0, 1000 )
  
 
-with col2:
+ with col2:
     follower = st.slider(
         'Select a limit of follower ',
         0, 500 )
-st.write('Values:', limit)
+ st.write('Values:', limit)
 
 
-def TextClean(tweet):
-    
-    tweet = tweet.lower()
-    tweet = re.sub(r'@[a-z0-9_]\S+', '', tweet)
-    tweet = re.sub(r'#[a-z0-9_]\S+', '', tweet)
-    tweet = re.sub(r'&[a-z0-9_]\S+', '', tweet)
-    tweet = re.sub(r'[?!.+,;$%&"]+', '', tweet)
-    tweet = re.sub(r'rt[\s]+', '', tweet)
-    tweet = re.sub(r'\d+', '', tweet)
-    tweet = re.sub(r'\$', '', tweet)
-    tweet = re.sub(r'RT', '', tweet)
-    return tweet
-def tweet_search(key_word):
+ def tweet_search(key_word):
     i = 0
     tweets_df = pd.DataFrame(columns = ['Datetime','tweetID', 'Tweet', 'Username', 'Retweets', 'Followers','loc','source'])
     for tweet in tweepy.Cursor(api.search_tweets, q = key_word, count = 500, lang = 'ar').items():
@@ -177,54 +156,54 @@ def tweet_search(key_word):
     tweets_df['Datetime'] = pd.to_datetime(tweets_df['Datetime'], format = '%Y.%m.%d %H:%M:%S')    
     tweets_df.set_index('Datetime', inplace = False)
     #tweets_df.to_csv(key_word + '.csv', encoding = 'utf-8')
-    tweets_df['CleanTweet'] = tweets_df['Tweet'].apply(TextClean)
+    #tweets_df['CleanTweet'] = tweets_df['Tweet'].apply(TextClean)
 
     return tweets_df
-tweets_df = tweet_search(key_word)
+ tweets_df = tweet_search(key_word)
 
-if st.button('show me dataset'):
-    st.dataframe(tweets_df) 
-a=tweets_df['source'].value_counts(normalize=True).mul(100).round(1)
-print(a)
-tweet_df_5min = tweets_df.groupby(pd.Grouper(key='Datetime', freq='1Min', convention='start')).size()
-b=tweet_df_5min.max()
-st.markdown("<h1 style=' text-align: center;color: red;'> Tweet level </h1>", unsafe_allow_html=True)
+ if st.button('show me tweets'):
+    st.dataframe(tweets_df[['tweetID','Tweet','Username','Followers','source']]) 
+ a=tweets_df['source'].value_counts(normalize=True).mul(100).round(1)
+ print(a)
+ tweet_df_5min = tweets_df.groupby(pd.Grouper(key='Datetime', freq='1Min', convention='start')).size()
+ b=tweet_df_5min.max()
+ st.markdown("<h1 style=' text-align: center;color: red;'> Tweet level </h1>", unsafe_allow_html=True)
 
-if 5 < b < 10 :
+ if 5 < b < 10 :
       print('level one')
       #st.title('tweet level')
       
       st.success('level one', icon="✅")
       chart(20)
-elif 10 < b <20 :
+ elif 10 < b <20 :
   print('level two')
   
   #st.title('level ')
   st.success('level two', icon="✅")
   chart(30)
-elif 20 < b < 100:
+ elif 20 < b < 100:
   print('level three')
   st.success('level  three', icon="✅")
   lottie_he = load_lottieurl("https://assets3.lottiefiles.com/private_files/lf30_up3nxxtl.json")
   st_lottie(
             lottie_he,
-            width=200,
-            height=200
+            width=300,
+            height=300
         )
 
   chart(45)
   #st.title('level three')
   st.success('level  three', icon="✅")
-elif 100< b <400:
+ elif 100< b <400:
       lottie_he = load_lottieurl("https://assets9.lottiefiles.com/packages/lf20_bveyhj83.json")
       st_lottie(
             lottie_he,
-            width=200,
-            height=200
+            width=300,
+            height=300
         )
 
 
-else :
+ else :
   print("no level ")
   st.title('no level ')
   chart(5)
@@ -234,8 +213,8 @@ else :
 #st.line_chart(tweet_df_5min)
 
 
-c=[]
-for i in tweets_df['Followers']:
+ c=[]
+ for i in tweets_df['Followers']:
   if 0 <i <100 :
     i=100
     c.append(i)
@@ -254,18 +233,25 @@ for i in tweets_df['Followers']:
   else :
     i=1000000
     c.append(i)
-tweets_df['folo'] = np.array(c)
+ tweets_df['folo'] = np.array(c)
+ col1, col2 = st.columns([10, 3])
 
-st.markdown("<h1 style='text-align: center; color: deepskyblue;'>Tweet per minutes  </h1>", unsafe_allow_html=True)
-tab1, tab2 = st.tabs(["min", "S"])
+ with col1:
+   st.metric(label="max tweet in 1min", value=b, delta="tweet in 1Min")
 
-with tab1:
- tweet_df_5min = tweets_df.groupby(pd.Grouper(key='Datetime', freq='1Min', convention='start')).size()
- fig, ax = plt.subplots()
- ax.plot(tweet_df_5min )
- st.line_chart(tweet_df_5min)
 
-with tab2:
+ with col2:
+   st.metric(label="Followers av", value=tweets_df['Followers'].mean(), delta="tweet in 1Min")
+ st.markdown("<h1 style='text-align: center; color: deepskyblue;'>Tweet per minutes  </h1>", unsafe_allow_html=True)
+ tab1, tab2 = st.tabs(["min", "S"])
+
+ with tab1:
+  tweet_df_5min = tweets_df.groupby(pd.Grouper(key='Datetime', freq='1Min', convention='start')).size()
+  fig, ax = plt.subplots()
+  ax.plot(tweet_df_5min )
+  st.line_chart(tweet_df_5min)
+
+ with tab2:
     tweet_df_5min = tweets_df.groupby(pd.Grouper(key='Datetime', freq='1S', convention='start')).size()
     fig, ax = plt.subplots()
     ax.plot(tweet_df_5min )
@@ -273,55 +259,50 @@ with tab2:
   
 
 #tweets_df['source'].value_counts().plot.pie()
-a=tweets_df['source'].value_counts(normalize=True).mul(100).round(1)
-print(a)
-tweet_df_5min = tweets_df.groupby(pd.Grouper(key='Datetime', freq='1Min', convention='start')).size()
-b=tweet_df_5min.max()
+ a=tweets_df['source'].value_counts(normalize=True).mul(100).round(1)
+ print(a)
+ tweet_df_5min = tweets_df.groupby(pd.Grouper(key='Datetime', freq='1Min', convention='start')).size()
+ b=tweet_df_5min.max()
 
 
 
 
 
-st.markdown("<h1 style='text-align: center; color: deepskyblue;'>Tweet Source and Followers</h1>", unsafe_allow_html=True)
-
-col1, col2 = st.columns([10, 3])
-
-with col1:
-   st.metric(label="max tweet in 1min", value=b, delta="tweet in 1Min")
 
 
-with col2:
-   st.metric(label="Followers av", value=tweets_df['Followers'].mean(), delta="tweet in 1Min")
+ tab1, tab2 = st.tabs(["Followers", "source"])
 
-
-tab1, tab2 ,tab3= st.tabs(["Followers", "source",'folo'])
-
-with tab1:
+ with tab1:
    st.header("the Followers")
-   fig3 = px.pie(tweets_df["Followers"].value_counts().head(), values=tweets_df["Followers"].value_counts().head().values, names=tweets_df["Followers"].value_counts().head().index, title='Followers')
-   st.plotly_chart(fig3)
+   #fig3 = px.pie(tweets_df["Followers"].value_counts().head(), values=tweets_df["Followers"].value_counts().head().values, names=tweets_df["Followers"].value_counts().head().index, title='Followers')
+   #st.plotly_chart(fig3)
+   fig4 = px.pie(tweets_df["folo"].value_counts().values, values=tweets_df["folo"].value_counts().values, names=['[0<Followers<100]','[100<Followers<500]','[500<Followers<1K]','[1K<Followers<10K]','[10K<Followers<100K]','[more then 100K]'], title='Followers')
+   
+   st.plotly_chart(fig4)
 
-with tab2:
+ with tab2:
     st.header("the source")
     fig2 = px.pie(a, values=a.values, names=a.index, title='the source')
     #st.pyplot(fig)
     st.plotly_chart(fig2)
 
-with tab3:
+ #with tab3:
 
 
-   fig4 = px.pie(tweets_df["folo"].value_counts().values, values=tweets_df["folo"].value_counts().values, names=['[0<Followers<100]','[100<Followers<500]','[500<Followers<1K]','[1K<Followers<10K]','[10K<Followers<100K]','[more then 100K]'], title='Followers')
+   #fig4 = px.pie(tweets_df["folo"].value_counts().values, values=tweets_df["folo"].value_counts().values, names=['[0<Followers<100]','[100<Followers<500]','[500<Followers<1K]','[1K<Followers<10K]','[10K<Followers<100K]','[more then 100K]'], title='Followers')
    
-   st.plotly_chart(fig4)
+   #st.plotly_chart(fig4)
 
 #Api = tweepy.API(auth)
 
+ number = st.number_input('Insert how many top users ')
+ datta=tweets_df.sort_values(by=['Followers'],ascending=False)
+ st.write(datta[['tweetID','Tweet','Username','Followers','source']].head(int(number)))
 
-
-import folium
-import  geopy
-from geopy.exc import GeocoderTimedOut
-from geopy.geocoders import Nominatim
+ import folium
+ import  geopy
+ from geopy.exc import GeocoderTimedOut
+ from geopy.geocoders import Nominatim
 
 
 #geo_locator = Nominatim(user_agent="LearnPython")
@@ -338,15 +319,15 @@ from geopy.geocoders import Nominatim
 #m = folium.Map(location=[0, 0], zoom_start=2)
 
     #st.map(map.save("index.html"))
-consumer_key1 = 'MlYcPT94qliDArDpwD7uy4jwt'
-consumer_secret1 = 'Im8r1N3bPi4k1K0MIGE2KB1NUo5KL6qMY2n5fiV32Zprx3N69s'
-access_token1 = '756327168-ZVzm0SKuoeEyxeYz4LJkG4IQZqEja4dHG0QJwHgu'
-access_token_secret1 = 'Uii0oZfdKru8PP3iT5uUdsznjOLU2A58acptCJZxDaqup'
+ consumer_key1 = 'MlYcPT94qliDArDpwD7uy4jwt'
+ consumer_secret1 = 'Im8r1N3bPi4k1K0MIGE2KB1NUo5KL6qMY2n5fiV32Zprx3N69s'
+ access_token1 = '756327168-ZVzm0SKuoeEyxeYz4LJkG4IQZqEja4dHG0QJwHgu'
+ access_token_secret1 = 'Uii0oZfdKru8PP3iT5uUdsznjOLU2A58acptCJZxDaqup'
 #Authenticate with credentials
-auth = tweepy.OAuthHandler(consumer_key1, consumer_secret1)
-auth.set_access_token(access_token1, access_token_secret1)
-apii = tweepy.API(auth)
-def get_tweets(key_word):
+ auth = tweepy.OAuthHandler(consumer_key1, consumer_secret1)
+ auth.set_access_token(access_token1, access_token_secret1)
+ apii = tweepy.API(auth)
+ def get_tweets(key_word):
     #Api = tweepy.API(auth)
     location_data = []
     for tweet in tweepy.Cursor(apii.search_tweets, q=key_word,lang = 'ar').items(100):
@@ -356,7 +337,7 @@ def get_tweets(key_word):
     return location_data
 
 
-def removeWeirdChars(text):
+ def removeWeirdChars(text):
     weirdPatterns = re.compile("["
                                u"\U0001F600-\U0001F64F"  # emoticons
                                u"\U0001F300-\U0001F5FF"  # symbols & pictographs
@@ -381,20 +362,20 @@ def removeWeirdChars(text):
                                u"\u2067"
                                "]+", flags=re.UNICODE)
     return weirdPatterns.sub(r'', text)
-tweets_loc = get_tweets(key_word)
+ tweets_loc = get_tweets(key_word)
 
-plt.style.use('ggplot')
-c='السعودية'
-m='المملكة'
-s='Saudi'
+ plt.style.use('ggplot')
+ c='السعودية'
+ m='المملكة'
+ s='Saudi'
 #a=tweets_df[0]
 #if c in a[1]:
    #print('yes')
-a=[]
-d=[]
-x=[]
+ a=[]
+ d=[]
+ x=[]
 
-for i in tweets_loc:
+ for i in tweets_loc:
   b=i[1]
   if c in i[1]:
     a.append('السعودية')
@@ -405,40 +386,40 @@ for i in tweets_loc:
   else:
    a.append(b)
 
-D=Counter(a)
-df =pd.DataFrame.from_dict(D, orient='index').reset_index()
+ D=Counter(a)
+ df =pd.DataFrame.from_dict(D, orient='index').reset_index()
 
-common_element = D.most_common(10)
+ common_element = D.most_common(10)
 
 
 
-for i in df['index']:
+ for i in df['index']:
   
   #o=get_display(arabic_reshaper.reshape(i))
   o=removeWeirdChars(i)
   x.append(o)
 
-import plotly.figure_factory as ff
+ import plotly.figure_factory as ff
 
-df['index'] = x
-print(df['index'])
-plt.figure(figsize = (20, 10))
-df=df.sort_values(by=0,ascending=False)
+ df['index'] = x
+ print(df['index'])
+ plt.figure(figsize = (20, 10))
+ df=df.sort_values(by=0,ascending=False)
 
-df=df.head(30)
-fig5 = px.bar(
+ df=df.head(30)
+ fig5 = px.bar(
       x= df['index'] , y=df[0])
 #fig5=plt.bar(df['index'],df[0])
 
-st.plotly_chart(fig5)
+ st.plotly_chart(fig5)
 
 
 
 
-from streamlit_folium import folium_static
+ from streamlit_folium import folium_static
 #m = folium.Map(location=[45.5236, -122.6750])
 #folium_static(m)
-if st.button('show me the map'):  
+ if st.button('show me the map'):  
   
 
   data=get_tweets(key_word)
@@ -456,5 +437,57 @@ if st.button('show me the map'):
 
 
   location_data = get_tweets(key_word)
-  folium_static(m)    
+  folium_static(m)  
+elif choice == "serch by username":
+ #te = st.text_input('Insert user name ')
+ ky_word = st.text_input('enter user name ')
+#Twitter credentials
+ consumer_key = '78F6GWmlPoJX4CtW8E5A4dQYf'
+ consumer_secret = 'Uj3ZCkYe47HOLG0OOyXUly3wyvwhFAG8GLuQqZHVqse6VipfwJ'
+ access_token = '1310463220281495552-D8AOegt4AcMXgiC738DgD6STjQbaVi'
+ access_token_secret = 'PrcCzW7N4LmEcLIKnxv7VcX8ytwwCsAIdal2EWXROhKAh'
+ appi = tweepy.API(auth)
+
+ #screen_name = 'Almajlliss'
   
+# fetching the user
+ 
+
+# fetching the url
+ url = ("https://twitter.com/%s"%(ky_word))
+
+ st.write("The URL of the user is : " + url)
+
+
+   
+# getting all the friends
+ #res = api.user_timeline(screen_name=ky_word, count=100, include_rts=True)
+ #st.write(res)
+ #tweets = [tweet.text for tweet in res]
+ #text = ''.join(str(tweet) for tweet in tweets)
+
+ #st.write(text)
+ user = pd.DataFrame(columns = ['Datetime', 'Tweet'])
+
+  
+# screen name of the account to be fetched
+#screen_name = "mjari7alghamdi"
+#for i in tweets_df['Username']:
+ # fetching the statuses
+ statuses = appi.user_timeline(screen_name=ky_word)
+ for status in statuses:
+    #print(status.text,status.created_at, end = "\n\n")
+    user = user.append({'Datetime': status.created_at , 
+                        'Tweet': status.text}, ignore_index = True
+                                          )
+                       
+                                         
+                                        
+                                          
+
+
+ #print(str(len(statuses)) + " number of statuses have been fetched.")
+ user['Datetime'] = pd.to_datetime(user['Datetime'], format = '%Y.%m.%d %H:%M:%S')    
+
+ #user
+ st.dataframe(user)

@@ -131,4 +131,5 @@ streamlit-folium ==0.7.0
 folium==0.12.1
 
 geopy==2.3.0
+pywhatkit== 5.4
 
